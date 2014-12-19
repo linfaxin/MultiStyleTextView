@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+        android:gravity="center"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+        <EditText
+            android:id="@+id/editText"
+            android:hint="input source text"
+            android:text="I'm //#@1a //u//S30multi//#!/ple//u!/ //bstyle// //#ff55fftext//S%140View"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+        <Button
+            android:id="@+id/button"
+            android:text="@android:string/ok"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+    <com.linfaxin.multistyletextview.MultiStyleTextView
+        android:id="@+id/multiStyleTextView"
+        app:color1="#ff0000"
+        app:color2="#00ff00"
+        app:color3="#0000ff"
+        android:text="I'm //#@1a //u//S30multi//#!/ple//u!/ //bstyle// //#ff55fftext//S%140View"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+</LinearLayout>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="MultiStyleTextView">
+        <attr name="color1" format="color|integer|reference" />
+        <attr name="color2" format="color|integer|reference" />
+        <attr name="color3" format="color|integer|reference" />
+        <attr name="color4" format="color|integer|reference" />
+        <attr name="color5" format="color|integer|reference" />
+        <attr name="color6" format="color|integer|reference" />
+        <attr name="size1" format="dimension" />
+        <attr name="size2" format="dimension" />
+        <attr name="size3" format="dimension" />
+        <attr name="format" format="string" />
+    </declare-styleable>
+</resources>
