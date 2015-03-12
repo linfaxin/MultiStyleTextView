@@ -153,10 +153,6 @@ public class MultiStyleTextView extends TextView {
         String[] parts = text.split(styleSeparator);//用//来规定后面的字体的格式
         ArrayList<StyleText> styleTexts = new ArrayList<StyleText>();
         for(String part : parts){
-            if(TextUtils.isEmpty(part)){
-                continue;
-            }
-
             styleTexts.add(parseStyleText(part));
         }
 
@@ -197,7 +193,9 @@ public class MultiStyleTextView extends TextView {
 
     /**解析出一个style的部分 */
     private StyleText parseStyleText(String part){
-
+        if(TextUtils.isEmpty(part)){
+            return new NoStyleText(part);
+        }
         String styleFlag = part.substring(0,1);//取得首个styleFlag：#号或者S...
         part = part.substring(1);//先去掉首个可能的styleFlag
 
