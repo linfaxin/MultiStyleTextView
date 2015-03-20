@@ -30,25 +30,26 @@ import java.util.HashSet;
 
 /**
  * Created by linfaxin on 2014/8/13 013.
- * Email: linlinfaxin@163.com
+ * Email: linlinfaxin@163.com <br>
+ * <a href="https://github.com/linfaxin/MultiStyleTextView">github地址<a/>  <br>
  *
- * 颜色：//#ffffff
- * 类似这样规定颜色样式的开始
- * android:text="//#ff5ec353好评//：%d条   //#f99c2e中评//：%d条   //#e75d5d差评//：%d条"
+ * 颜色：//#ffffff <br>
+ * 类似这样规定颜色样式的开始 <br>
+ * android:text="//#ff5ec353好评//：%d条   //#f99c2e中评//：%d条   //#e75d5d差评//：%d条" <br>
  *
- * 字体大小：//S16  //%80
- * 类似这样规定额外的字体大小样式的开始，单位DP/百分比
- * android:text="//s12好评//：1条   //s13中评//：1条   //s14差评//：1条"
+ * 字体大小：//S16  //%80 <br>
+ * 类似这样规定额外的字体大小样式的开始，单位DP/百分比 <br>
+ * android:text="//s12好评//：1条   //s13中评//：1条   //s14差评//：1条" <br>
  *
  * 下划线： //u
  * 删除线： //l
  * 加粗： //b
  *
- * 可以用//#!/，//S!/，//U!/...来标识对应样式的结束，用//标志所有样式的结束
+ * 可以用//#!/，//S!/，//U!/...来标识对应样式的结束，用//标志所有样式的结束 <br>
  *
  * 混合以上的使用
  */
-public class MultiStyleTextView extends TextView {
+public class MultiStyleTextView extends TextView{
     private static HashSet<Class<? extends StyleText>> stylesClasses;
     private static final String styleSeparator = "//";
     private static final String styleEndSeparator = "!/";
@@ -76,6 +77,7 @@ public class MultiStyleTextView extends TextView {
     private void init(AttributeSet attrs){
         if(attrs!=null){
             TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.MultiStyleTextView);
+            ColorStateList[] colors = new ColorStateList[6];
             colors[0]= a.getColorStateList(R.styleable.MultiStyleTextView_color1);
             colors[1]= a.getColorStateList(R.styleable.MultiStyleTextView_color2);
             colors[2]= a.getColorStateList(R.styleable.MultiStyleTextView_color3);
@@ -85,6 +87,7 @@ public class MultiStyleTextView extends TextView {
             for(int i=0,length=colors.length; i<length; i++){
                 if(colors[i]==null) colors[i] = getTextColors();
             }
+            setColors(colors);
 
             sizes[0]= a.getDimensionPixelSize(R.styleable.MultiStyleTextView_size1, 14);
             sizes[1]= a.getDimensionPixelSize(R.styleable.MultiStyleTextView_size2, 14);
@@ -92,10 +95,7 @@ public class MultiStyleTextView extends TextView {
 
             format = a.getString(R.styleable.MultiStyleTextView_format);
         }
-        CharSequence text = getText();
-        if(text!=null && text.length() > 0){
-            setTextMulti(text.toString());
-        }else if(format != null ) setTextMulti(format);
+        if(format != null ) setTextMulti(format);
 
         if(getHint()!=null && getHint().length()>0 ) setHint(convertToMulti(getHint().toString()));
         requestLayout();
@@ -145,9 +145,25 @@ public class MultiStyleTextView extends TextView {
         else setTextMulti(format);
     }
     public void setTextMulti(String text){
-        setText(convertToMulti(text));
+        if(TextUtils.isEmpty(text)){
+            super.setText(null);
+        }else{
+            setText(convertToMulti(text));
+        }
     }
 
+    @Override
+    public void setText(CharSequence text, TextView.BufferType type) {
+        if(text==null || text instanceof Spannable){
+            super.setText(text, type);
+        }else{
+            setTextMulti(text.toString());
+        }
+    }
+
+    public void setTextReal(CharSequence text){
+        super.setText(text);
+    }
     public Spannable convertToMulti(String text){
         //解析出多个部分
         String[] parts = text.split(styleSeparator);//用//来规定后面的字体的格式
@@ -345,13 +361,16 @@ public class MultiStyleTextView extends TextView {
     @Style(flag = "#", spanClass = ColorText.ForegroundColorListSpan.class)
     public static class ColorText extends StyleText{
         ColorStateList colorStateList;
+        MultiStyleTextView tv;
+        @Nullable Integer refIndex;
         @Override
         public void parse(MultiStyleTextView tv, String part, String styleFlag, @Nullable Integer refIndex) throws Exception {
+            this.tv = tv;
+            this.refIndex = refIndex;
+
             ColorStateList textColor = null;
-            ColorStateList[] colors = tv.colors;
-            if(refIndex !=null && colors!=null && colors.length>0){//引用
-                textColor = colors[refIndex % colors.length];
-                if(textColor==null) textColor = tv.getTextColors();
+            if(refIndex !=null){//引用
+                textColor = getCurrentColorState();
 
             }else{
                 try {
@@ -371,21 +390,29 @@ public class MultiStyleTextView extends TextView {
             colorStateList = textColor;
             text = part;
         }
+        private ColorStateList getCurrentColorState(){
+            if(refIndex==null) return null;
+            ColorStateList colorStateList = null;
+            ColorStateList[] colors = tv.colors;
+            if(colors!=null && colors.length>0){//引用
+                colorStateList = colors[refIndex % colors.length];
+                if(colorStateList==null) colorStateList = tv.getTextColors();
+            }
+            return colorStateList;
+        }
 
         @Override
         public Object getSpanObject() {
-            if(colorStateList==null) return null;
-            return new ForegroundColorListSpan(colorStateList);
+            return new ForegroundColorListSpan();
         }
 
         class ForegroundColorListSpan extends ForegroundColorSpan {
-            ColorStateList colorStateList;
-            public ForegroundColorListSpan(ColorStateList colorStateList) {
-                super(colorStateList.getDefaultColor());
-                this.colorStateList = colorStateList;
+            public ForegroundColorListSpan() {
+                super(0xff0000);
             }
             @Override
             public void updateDrawState(TextPaint ds) {
+                colorStateList = getCurrentColorState();
                 if(colorStateList==null) ds.setColor(getForegroundColor());
                 else ds.setColor(colorStateList.getColorForState(ds.drawableState, colorStateList.getDefaultColor()));
             }
