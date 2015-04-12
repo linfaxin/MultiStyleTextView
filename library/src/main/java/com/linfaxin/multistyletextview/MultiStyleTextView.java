@@ -153,7 +153,7 @@ public class MultiStyleTextView extends TextView{
     }
 
     @Override
-    public void setText(CharSequence text, TextView.BufferType type) {
+    public void setText(CharSequence text, BufferType type) {
         if(text==null || text instanceof Spannable){
             super.setText(text, type);
         }else{
@@ -220,7 +220,8 @@ public class MultiStyleTextView extends TextView{
             try {
                 refIndex = Integer.valueOf(part.substring(1, 2))-1;
                 part = part.substring(2);
-            } catch (Exception ignore) {
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
         if(stylesClasses == null){
@@ -391,7 +392,7 @@ public class MultiStyleTextView extends TextView{
             text = part;
         }
         private ColorStateList getCurrentColorState(){
-            if(refIndex==null) return null;
+            if(refIndex==null) return colorStateList;
             ColorStateList colorStateList = null;
             ColorStateList[] colors = tv.colors;
             if(colors!=null && colors.length>0){//引用
@@ -408,7 +409,7 @@ public class MultiStyleTextView extends TextView{
 
         class ForegroundColorListSpan extends ForegroundColorSpan {
             public ForegroundColorListSpan() {
-                super(0xff0000);
+                super(0xffff0000);
             }
             @Override
             public void updateDrawState(TextPaint ds) {
