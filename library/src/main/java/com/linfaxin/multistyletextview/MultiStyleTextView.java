@@ -153,7 +153,7 @@ public class MultiStyleTextView extends TextView{
     }
 
     @Override
-    public void setText(CharSequence text, BufferType type) {
+    public void setText(CharSequence text, TextView.BufferType type) {
         if(text==null || text instanceof Spannable){
             super.setText(text, type);
         }else{
@@ -168,8 +168,13 @@ public class MultiStyleTextView extends TextView{
         //解析出多个部分
         String[] parts = text.split(styleSeparator);//用//来规定后面的字体的格式
         ArrayList<StyleText> styleTexts = new ArrayList<StyleText>();
-        for(String part : parts){
-            styleTexts.add(parseStyleText(part));
+        for (int i = 0; i < parts.length; i++) {
+            String part = parts[i];
+            if(i==0 && !text.startsWith(styleSeparator)){
+                styleTexts.add(new NoStyleText(part));
+            }else{
+                styleTexts.add(parseStyleText(part));
+            }
         }
 
         //获得所有过滤掉符号的内容
@@ -333,6 +338,52 @@ public class MultiStyleTextView extends TextView{
             }
         }
     }
+    //参数是颜色的Style
+    private abstract static class ColorParamStyleText extends StyleText{
+        ColorStateList parsedColor;
+        MultiStyleTextView tv;
+        @Nullable Integer refIndex;
+        @Override
+        public void parse(MultiStyleTextView tv, String part, String styleFlag, @Nullable Integer refIndex) throws Exception {
+            this.tv = tv;
+            this.refIndex = refIndex;
+
+            ColorStateList textColor = null;
+            if(refIndex !=null){//引用
+                textColor = getCurrentColors();
+
+            }else{
+                try {
+                    textColor = ColorStateList.valueOf(Color.parseColor("#" + part.substring(0, 8).trim()));//前8个字符是颜色代码，代表字体颜色
+                    part = part.substring(8);
+                } catch (Exception ignore) {
+                }
+                if(textColor==null){
+                    try {
+                        textColor = ColorStateList.valueOf(Color.parseColor("#" + part.substring(0, 6).trim()));//前6个字符是颜色代码，代表字体颜色
+                        part = part.substring(6);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                if(textColor==null){
+                    textColor = tv.getTextColors();
+                }
+            }
+            parsedColor = textColor;
+            text = part;
+        }
+        ColorStateList getCurrentColors(){
+            if(refIndex==null) return parsedColor;
+            ColorStateList colorStateList = null;
+            ColorStateList[] colors = tv.colors;
+            if(colors!=null && colors.length>0){//引用
+                colorStateList = colors[refIndex % colors.length];
+                if(colorStateList==null) colorStateList = tv.getTextColors();
+            }
+            return colorStateList;
+        }
+    }
     //无样式
     private class NoStyleText extends StyleText{
         public NoStyleText(String part) {
@@ -360,48 +411,7 @@ public class MultiStyleTextView extends TextView{
 
     //字体颜色
     @Style(flag = "#", spanClass = ColorText.ForegroundColorListSpan.class)
-    public static class ColorText extends StyleText{
-        ColorStateList colorStateList;
-        MultiStyleTextView tv;
-        @Nullable Integer refIndex;
-        @Override
-        public void parse(MultiStyleTextView tv, String part, String styleFlag, @Nullable Integer refIndex) throws Exception {
-            this.tv = tv;
-            this.refIndex = refIndex;
-
-            ColorStateList textColor = null;
-            if(refIndex !=null){//引用
-                textColor = getCurrentColorState();
-
-            }else{
-                try {
-                    textColor = ColorStateList.valueOf(Color.parseColor("#" + part.substring(0, 8).trim()));//前8个字符是颜色代码，代表字体颜色
-                    part = part.substring(8);
-                } catch (Exception ignore) {
-                }
-                if(textColor==null){
-                    try {
-                        textColor = ColorStateList.valueOf(Color.parseColor("#" + part.substring(0, 6).trim()));//前6个字符是颜色代码，代表字体颜色
-                        part = part.substring(6);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-            colorStateList = textColor;
-            text = part;
-        }
-        private ColorStateList getCurrentColorState(){
-            if(refIndex==null) return colorStateList;
-            ColorStateList colorStateList = null;
-            ColorStateList[] colors = tv.colors;
-            if(colors!=null && colors.length>0){//引用
-                colorStateList = colors[refIndex % colors.length];
-                if(colorStateList==null) colorStateList = tv.getTextColors();
-            }
-            return colorStateList;
-        }
-
+    public static class ColorText extends ColorParamStyleText{
         @Override
         public Object getSpanObject() {
             return new ForegroundColorListSpan();
@@ -413,9 +423,9 @@ public class MultiStyleTextView extends TextView{
             }
             @Override
             public void updateDrawState(TextPaint ds) {
-                colorStateList = getCurrentColorState();
-                if(colorStateList==null) ds.setColor(getForegroundColor());
-                else ds.setColor(colorStateList.getColorForState(ds.drawableState, colorStateList.getDefaultColor()));
+                ColorStateList colorState = getCurrentColors();
+                if(colorState==null) ds.setColor(getForegroundColor());
+                else ds.setColor(colorState.getColorForState(ds.drawableState, colorState.getDefaultColor()));
             }
         }
     }
@@ -453,10 +463,15 @@ public class MultiStyleTextView extends TextView{
 
             } else {
                 try {
-                    size = Integer.valueOf(part.substring(0, 2).trim());//前两个字符是数字，代表字体大小
+                    size = Integer.valueOf(part.substring(0, 2));//前两个字符是数字，代表字体大小
                     part = part.substring(2);
-                } catch (Exception e) {
-                    e.printStackTrace();
+                } catch (Exception ignore) {
+                    try {
+                        size = Integer.valueOf(part.substring(0, 1));//前一个字符是数字，代表字体大小
+                        part = part.substring(1);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
             this.size = size;
@@ -468,6 +483,7 @@ public class MultiStyleTextView extends TextView{
             return new AbsoluteSizeSpan(size, isSizeInDp);
         }
     }
+
     //下划线
     @Style(flag = "u", spanClass = UnderlineSpan.class)
     public static class UnderlineStyle extends NoParamStyleText{
@@ -475,7 +491,6 @@ public class MultiStyleTextView extends TextView{
         public Object getSpanObject() {
             return new UnderlineSpan();
         }
-
     }
     //删除线
     @Style(flag = "l", spanClass = StrikethroughSpan.class)
@@ -485,6 +500,7 @@ public class MultiStyleTextView extends TextView{
             return new StrikethroughSpan();
         }
     }
+
     //粗体
     @Style(flag = "b", spanClass = StyleSpan.class)
     public static class BoldStyle extends NoParamStyleText{
