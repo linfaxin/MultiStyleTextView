@@ -153,7 +153,7 @@ public class MultiStyleTextView extends TextView{
     }
 
     @Override
-    public void setText(CharSequence text, TextView.BufferType type) {
+    public void setText(CharSequence text, BufferType type) {
         if(text==null || text instanceof Spannable){
             super.setText(text, type);
         }else{
@@ -233,7 +233,12 @@ public class MultiStyleTextView extends TextView{
             initStyleClasses(getContext());
         }
         for(Class<? extends StyleText> c : stylesClasses){
-            Style style = c.getAnnotation(Style.class);
+            Style style = null;
+            try {
+                style = c.getAnnotation(Style.class);
+            } catch (IncompatibleClassChangeError ex) {
+                ex.printStackTrace();
+            }
             if(style==null){
                 Log.e(MultiStyleTextView.class.getSimpleName(), "class:" + c + " miss annotation:" + Style.class);
             }else{
@@ -483,7 +488,6 @@ public class MultiStyleTextView extends TextView{
             return new AbsoluteSizeSpan(size, isSizeInDp);
         }
     }
-
     //下划线
     @Style(flag = "u", spanClass = UnderlineSpan.class)
     public static class UnderlineStyle extends NoParamStyleText{
@@ -513,7 +517,7 @@ public class MultiStyleTextView extends TextView{
     @Target(ElementType.TYPE)
     @Retention(RetentionPolicy.RUNTIME)
     @interface Style {
-        public String flag();
-        public Class spanClass();
+        String flag();
+        Class spanClass();
     }
 }
