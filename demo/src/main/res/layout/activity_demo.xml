@@ -12,7 +12,7 @@
         <EditText
             android:id="@+id/editText"
             android:hint="input source text"
-            android:text="I'm //#@1a //u//S30multi//#!/ple//u!/ //bstyle// //#ff55fftext//S%140View"
+            android:text="I'm //#@1a //u//S30multi//#!/ple//u!/ //bstyle// //#ff55fftext//S%80View"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
         <Button
@@ -26,7 +26,7 @@
         app:color1="#ff0000"
         app:color2="#00ff00"
         app:color3="#0000ff"
-        android:text="I'm //#@1a //u//S30multi//#!/ple//u!/ //bstyle// //#ff55fftext//S%140View"
+        android:text="I'm //#@1a //u//S30multi//#!/ple//u!/ //bstyle// //#ff55fftext//S%80View"
         android:gravity="center"
         android:layout_width="match_parent"
         android:layout_height="0dp"
