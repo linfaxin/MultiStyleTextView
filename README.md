@@ -14,7 +14,8 @@ This library provide a simple way to display multiple styles in one TextView.
 //S30 means 30dp
 
 //S%80 means 80% size
- ![image](demo/demo_size.png)
+
+![image](demo/demo_size.png)
 
 ## Color:
 
@@ -28,7 +29,8 @@ This library provide a simple way to display multiple styles in one TextView.
 //#@1 means use color1
 
 //#00ff00 means use color: #00ff00
- ![image](demo/demo_color.png)
+
+![image](demo/demo_color.png)
 
 
 ## Other:
@@ -50,7 +52,8 @@ This library provide a simple way to display multiple styles in one TextView.
         />
 ```
 use "//" end all style defined
- ![image](demo/demo_end_style_1.png)
+
+![image](demo/demo_end_style_1.png)
 
 
 
@@ -62,9 +65,10 @@ use "//" end all style defined
         />
 ```
 use "//S!/" end size style, use "//#!/" end color style, ...
- ![image](demo/demo_end_style_2.png)
+
+![image](demo/demo_end_style_2.png)
 
 
 ## All Style:
 
- ![image](demo/demo_screen.png)
+![image](demo/demo_screen.png)
